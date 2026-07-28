@@ -1,60 +1,162 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="TokenClub API — доступ к AI-моделям через Custom Endpoint.">
-  <title>TokenClub API — доступ к AI-моделям</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="enhancements.css">
+  <meta name="description" content="AI solutions for code, content and automation.">
+  <title>AI.ПРАКТИКА - AI solutions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    .pricing .price-card:nth-child(1) > strong { font-size: 0; }
-    .pricing .price-card:nth-child(1) > strong::after { content: "5 ₽"; font-size: 25px; }
-    .pricing .price-card:nth-child(2) > strong { font-size: 0; }
-    .pricing .price-card:nth-child(2) > strong::after { content: "8 ₽"; font-size: 25px; }
-    .pricing .price-card:nth-child(3) > strong { font-size: 0; }
-    .pricing .price-card:nth-child(3) > strong::after { content: "17 ₽"; font-size: 25px; }
-    .pricing .price-card:nth-child(4) > strong { font-size: 0; }
-    .pricing .price-card:nth-child(4) > strong::after { content: "25 ₽"; font-size: 25px; }
+    :root { --bg:#0d1114; --surface:#151b1f; --surface-2:#1b2328; --text:#f2f7f7; --muted:#a7b5ba; --line:rgba(199,221,226,.16); --lime:#c8ff3d; --cyan:#82dcff; --shadow:0 20px 55px rgba(0,0,0,.24); --max:1180px; }
+    [data-theme="light"] { --bg:#f4f8f8; --surface:#fff; --surface-2:#e7f0f1; --text:#132025; --muted:#5c6c72; --line:rgba(22,55,64,.16); --lime:#a7df13; --cyan:#198ab7; --shadow:0 18px 42px rgba(35,68,76,.12); }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; overflow-x:hidden; background:var(--bg); color:var(--text); font:500 16px/1.6 Manrope,Arial,sans-serif; transition:background .35s,color .35s; }
+    body.loading { overflow:hidden; }
+    a { color:inherit; text-decoration:none; }
+    button { font:inherit; }
+    .wrap { width:min(calc(100% - 48px),var(--max)); margin:auto; }
+    .loader { position:fixed; inset:0; z-index:100; display:grid; place-items:center; background:var(--bg); transition:opacity .55s ease,visibility .55s; }
+    .loader.done { opacity:0; visibility:hidden; }
+    .loader-mark { font:700 30px "Space Grotesk",sans-serif; letter-spacing:.04em; }
+    .loader-mark i { color:var(--lime); font-style:normal; }
+    .loader-line { width:180px; height:2px; margin:18px auto 0; overflow:hidden; background:var(--line); }
+    .loader-line::after { content:""; display:block; width:45%; height:100%; background:var(--lime); animation:load 1.05s ease-in-out infinite; }
+    @keyframes load { from { transform:translateX(-120%); } to { transform:translateX(280%); } }
+    .hero { position:relative; min-height:min(800px,100svh); isolation:isolate; overflow:hidden; border-bottom:1px solid var(--line); }
+    .hero .wrap { position:relative; z-index:2; }
+    #field { position:absolute; inset:0; z-index:-3; width:100%; height:100%; opacity:.82; }
+    .hero::before { content:""; position:absolute; inset:0; z-index:-2; background:linear-gradient(90deg,var(--bg) 0%,color-mix(in srgb,var(--bg) 84%,transparent) 48%,color-mix(in srgb,var(--bg) 35%,transparent)); }
+    .hero-illustration { position:absolute; z-index:0; top:50%; right:max(5vw,42px); width:min(39vw,530px); min-width:400px; transform:translateY(-42%); pointer-events:none; }
+    .studio { position:relative; padding:12px; border:1px solid color-mix(in srgb,var(--cyan) 36%,transparent); border-radius:8px; background:#111a1d; box-shadow:0 28px 70px rgba(0,0,0,.38),0 0 0 9px color-mix(in srgb,var(--cyan) 4%,transparent); }
+    .studio::after { content:""; position:absolute; z-index:-1; right:8%; bottom:-22px; width:84%; height:23px; border-radius:50%; background:rgba(0,0,0,.5); filter:blur(12px); }
+    .studio-bar { display:flex; align-items:center; justify-content:space-between; height:31px; padding:0 7px 10px; border-bottom:1px solid rgba(199,221,226,.14); }
+    .studio-dots { display:flex; gap:5px; }
+    .studio-dots i { width:6px; height:6px; border-radius:50%; background:#647378; }
+    .studio-dots i:first-child { background:var(--lime); box-shadow:0 0 9px var(--lime); }
+    .studio-bar span { color:var(--cyan); font:700 9px "Space Grotesk",sans-serif; letter-spacing:.13em; }
+    .studio-body { display:grid; grid-template-columns:.88fr 1.12fr; gap:10px; padding-top:12px; }
+    .task-pane,.result-pane { min-height:272px; padding:14px; border:1px solid rgba(199,221,226,.13); border-radius:5px; background:#0d1316; }
+    .pane-label { display:block; margin-bottom:16px; color:#8ea2a8; font:700 9px "Space Grotesk",sans-serif; letter-spacing:.12em; }
+    .task-option { display:flex; align-items:center; gap:9px; margin-bottom:10px; padding:10px 8px; border-left:2px solid var(--cyan); background:#152125; color:#d9e3e5; font:700 12px "Space Grotesk",sans-serif; }
+    .task-option:nth-of-type(3) { border-left-color:var(--lime); }
+    .task-option:nth-of-type(4) { border-left-color:#e5b5ff; }
+    .task-option b { display:grid; place-items:center; width:19px; height:19px; border-radius:50%; background:#1f343b; color:var(--cyan); font-size:9px; }
+    .result-pane { position:relative; overflow:hidden; }
+    .result-pane::before { content:""; position:absolute; inset:auto -30px -45px auto; width:180px; height:180px; border:1px solid color-mix(in srgb,var(--lime) 45%,transparent); border-radius:50%; box-shadow:0 0 40px color-mix(in srgb,var(--lime) 12%,transparent); }
+    .result-title { position:relative; margin:1px 0 18px; color:#f2f7f7; font:700 20px/1.1 "Space Grotesk",sans-serif; }
+    .result-line { position:relative; height:7px; margin:8px 0; border-radius:2px; background:#53646a; }
+    .result-line.short { width:58%; } .result-line.mid { width:77%; } .result-line.lime { width:42%; background:var(--lime); }
+    .result-chip { position:relative; display:inline-flex; align-items:center; gap:6px; margin-top:26px; padding:7px 9px; border:1px solid color-mix(in srgb,var(--lime) 48%,transparent); border-radius:3px; color:var(--lime); font:700 10px "Space Grotesk",sans-serif; }
+    .result-chip::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--lime); box-shadow:0 0 8px var(--lime); }
+    nav { position:fixed; z-index:40; top:0; left:50%; width:min(calc(100% - 48px),var(--max)); min-height:72px; display:flex; align-items:center; justify-content:space-between; gap:20px; transform:translateX(-50%); border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--bg) 82%,transparent); backdrop-filter:blur(16px); }
+    .logo { font:700 20px "Space Grotesk",sans-serif; letter-spacing:.025em; white-space:nowrap; }
+    .logo i { color:var(--lime); font-style:normal; }
+    .nav-right { display:flex; align-items:center; gap:18px; }
+    .nav-note { color:var(--muted); font-size:13px; }
+    .control-panel { display:flex; align-items:center; gap:5px; padding:4px; border:1px solid var(--line); border-radius:7px; background:color-mix(in srgb,var(--surface) 82%,transparent); box-shadow:var(--shadow); backdrop-filter:blur(12px); }
+    .control { min-width:36px; height:32px; padding:0 8px; border:0; border-radius:4px; background:transparent; color:var(--muted); cursor:pointer; transition:background .2s,color .2s,transform .2s; }
+    .control:hover,.control[aria-pressed="true"] { background:var(--surface-2); color:var(--text); }
+    .control:active { transform:scale(.94); }
+    .control svg { width:18px; height:18px; vertical-align:middle; stroke:currentColor; fill:none; stroke-width:1.8; }
+    .hero-content { max-width:660px; padding:98px 0 122px; }
+    .eyebrow { display:inline-flex; align-items:center; gap:8px; padding:7px 11px; border:1px solid var(--line); border-radius:99px; background:color-mix(in srgb,var(--surface) 72%,transparent); color:var(--text); font-size:13px; backdrop-filter:blur(8px); }
+    .eyebrow::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--lime); box-shadow:0 0 12px var(--lime); }
+    h1,h2,h3 { margin:0; font-family:"Space Grotesk",sans-serif; line-height:1.08; letter-spacing:0; }
+    h1 { max-width:790px; margin:25px 0; font-size:clamp(43px,6.25vw,76px); }
+    .lime { color:var(--lime); text-shadow:0 0 25px color-mix(in srgb,var(--lime) 25%,transparent); }
+    .cyan { color:var(--cyan); }
+    .lead { max-width:650px; margin:0; color:var(--muted); font-size:clamp(16px,2vw,19px); }
+    .price-hero { margin:35px 0 27px; font:600 clamp(23px,3vw,32px)/1.2 "Space Grotesk",sans-serif; }
+    .price-hero strong { color:var(--lime); }
+    .actions { display:flex; flex-wrap:wrap; gap:12px; }
+    .button { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:51px; padding:0 19px; border:1px solid transparent; border-radius:5px; font-weight:800; transition:transform .2s,background .2s,border-color .2s; }
+    .button:hover { transform:translateY(-3px); }
+    .primary { background:var(--lime); color:#152000; box-shadow:0 10px 28px color-mix(in srgb,var(--lime) 21%,transparent); }
+    .secondary { border-color:var(--line); background:color-mix(in srgb,var(--surface) 53%,transparent); color:var(--text); }
+    .badge { display:inline-flex; gap:8px; margin-top:24px; color:var(--muted); font-size:13px; }
+    .badge b { color:var(--cyan); }
+    section { padding:112px 0; }
+    .services { background:var(--surface); }
+    .section-kicker { margin:0 0 13px; color:var(--cyan); font-size:12px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
+    h2 { max-width:730px; font-size:clamp(34px,4.4vw,54px); }
+    .intro { max-width:580px; margin:18px 0 0; color:var(--muted); }
+    .service-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin-top:51px; border:1px solid var(--line); background:var(--line); }
+    .service { min-height:282px; padding:28px 26px; background:var(--surface); transition:transform .25s,background .25s; }
+    .service:hover { transform:translateY(-5px); background:var(--surface-2); }
+    .icon { display:grid; place-items:center; width:42px; height:42px; margin-bottom:50px; border:1px solid color-mix(in srgb,var(--lime) 45%,transparent); color:var(--lime); }
+    .icon svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; }
+    h3 { margin-bottom:9px; font-size:21px; }
+    .service p,.step p { margin:0; color:var(--muted); font-size:14px; }
+    .process { overflow:hidden; }
+    .funnel { position:relative; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:53px 0 34px; }
+    .funnel::before { content:""; position:absolute; top:24px; left:11%; right:11%; height:1px; background:linear-gradient(90deg,var(--lime),var(--cyan)); opacity:.7; }
+    .step { position:relative; padding-right:20px; }
+    .step b { position:relative; display:grid; place-items:center; width:49px; height:49px; margin-bottom:25px; border:1px solid var(--cyan); border-radius:50%; background:var(--bg); color:var(--cyan); font:600 14px "Space Grotesk",sans-serif; }
+    .step:nth-child(odd) b { border-color:var(--lime); color:var(--lime); }
+    .step h3 { font-size:18px; }
+    .pricing { border-block:1px solid var(--line); background:linear-gradient(125deg,var(--surface-2),var(--bg)); }
+    .price-box { display:flex; align-items:end; justify-content:space-between; gap:45px; }
+    .price-main { max-width:600px; margin:20px 0 0; color:var(--lime); font:600 clamp(34px,5vw,62px)/1.08 "Space Grotesk",sans-serif; }
+    .price-note { max-width:345px; margin:0 0 4px; color:var(--muted); }
+    .trust-list { margin-top:48px; border-top:1px solid var(--line); }
+    .trust-item { display:grid; grid-template-columns:60px 1fr; align-items:center; min-height:84px; border-bottom:1px solid var(--line); font:500 clamp(18px,2.3vw,25px)/1.3 "Space Grotesk",sans-serif; }
+    .trust-item span { color:var(--cyan); font:600 14px "Space Grotesk",sans-serif; }
+    .final { position:relative; overflow:hidden; text-align:center; background:var(--surface); }
+    .final::before { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at center,color-mix(in srgb,var(--lime) 14%,transparent),transparent 60%); pointer-events:none; }
+    .final .wrap { position:relative; }
+    .final h2 { margin:auto; }
+    .final p:not(.section-kicker) { max-width:530px; margin:20px auto 30px; color:var(--muted); }
+    footer { padding:20px 0; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    footer .wrap { display:flex; justify-content:space-between; gap:20px; }
+    .fixed-tg { position:fixed; z-index:50; right:22px; bottom:22px; display:grid; place-items:center; width:52px; height:52px; border-radius:50%; background:var(--cyan); color:#0d2832; box-shadow:0 10px 29px color-mix(in srgb,var(--cyan) 30%,transparent); transition:transform .2s; }
+    .fixed-tg:hover { transform:scale(1.08); }
+    .fixed-tg svg { width:25px; fill:currentColor; }
+    .reveal { opacity:0; transform:translateY(20px); transition:opacity .65s ease,transform .65s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+    @media (max-width:820px) { .hero { min-height:735px; } .hero-illustration { right:-150px; width:440px; opacity:.4; } .nav-note { display:none; } .hero-content { padding-top:150px; } section { padding:84px 0; } .service-grid { grid-template-columns:repeat(2,1fr); } .funnel { grid-template-columns:repeat(2,1fr); gap:33px 18px; } .funnel::before { display:none; } .price-box { display:block; } .price-note { margin-top:25px; } }
+    @media (min-width:821px) and (max-width:1190px) { .hero-content { max-width:57%; } }
+    @media (max-width:540px) { .wrap { width:min(calc(100% - 32px),var(--max)); } nav { width:calc(100% - 32px); min-height:65px; gap:12px; } .logo { font-size:16px; } .nav-right { gap:0; } .control-panel { padding:3px; } .control { min-width:33px; padding:0 6px; } .hero { min-height:720px; } .hero-illustration { display:none; } .hero-content { padding:128px 0 83px; } h1 { font-size:42px; } .actions { display:grid; } .button { width:100%; } .service-grid { grid-template-columns:1fr; } .service { min-height:0; padding:25px; } .icon { margin-bottom:30px; } .funnel { grid-template-columns:1fr; margin-top:40px; gap:29px; } .trust-item { grid-template-columns:41px 1fr; min-height:76px; font-size:18px; } footer .wrap { display:block; } footer .wrap span { display:block; margin-bottom:4px; } .fixed-tg { right:16px; bottom:16px; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } #field { display:none; } }
   </style>
 </head>
-<body>
-  <div class="loader" id="loader" data-i18n="loader">Подключаем TokenClub API…</div>
-  <header class="site-header">
-    <a class="brand" href="#top" aria-label="TokenClub API"><b>TC</b><span>TokenClub API</span></a>
-    <nav class="main-nav" aria-label="Основная навигация">
-      <a href="#features" data-i18n="navFeatures">Возможности</a><a href="#models" data-i18n="navModels">Модели</a><a href="#pricing" data-i18n="navPricing">Тарифы</a><a href="#setup" data-i18n="navSetup">Подключение</a>
-    </nav>
-    <div class="header-actions">
-      <button class="icon-btn" id="themeBtn" type="button" aria-label="Переключить тему" title="Переключить тему">☼</button>
-      <button class="lang-btn" id="langBtn" type="button" aria-label="Сменить язык">RU / EN</button>
-      <a class="header-cta purchase-link" href="https://t.me/Nadodelat2" target="_blank" rel="noopener" data-i18n="getAccess">Написать в Telegram ↗</a>
+<body class="loading">
+  <div class="loader" aria-label="Loading"><div><div class="loader-mark">AI.<i>PRACTICE</i></div><div class="loader-line"></div></div></div>
+  <header class="hero" id="top">
+    <div class="hero-illustration" aria-hidden="true"><div class="studio"><div class="studio-bar"><div class="studio-dots"><i></i><i></i><i></i></div><span>AI. PRACTICE</span></div><div class="studio-body"><div class="task-pane"><span class="pane-label">ЗАДАЧА</span><div class="task-option"><b>&lt;/&gt;</b>Код</div><div class="task-option"><b>Aa</b>Текст</div><div class="task-option"><b>01</b>Данные</div></div><div class="result-pane"><span class="pane-label">РЕЗУЛЬТАТ</span><p class="result-title">Готово к работе</p><div class="result-line mid"></div><div class="result-line"></div><div class="result-line short"></div><div class="result-line lime"></div><span class="result-chip">ПРОВЕРЕНО</span></div></div></div></div>
+    <div class="wrap"><nav aria-label="Main navigation"><a class="logo" href="#top">AI.<i data-i18n="brand">ПРАКТИКА</i></a><div class="nav-right"><span class="nav-note" data-i18n="navNote">AI-решения под вашу задачу</span><div class="control-panel" aria-label="Settings"><button class="control" id="langToggle" type="button" aria-label="Switch language">EN</button><button class="control" id="themeToggle" type="button" aria-label="Toggle color theme" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg></button></div></div></nav>
+      <div class="hero-content"><span class="eyebrow" data-i18n="eyebrow">Частный AI-исполнитель</span><h1 data-i18n-html="heroTitle">Решаю задачи с помощью AI: <span class="lime">код</span>, <span class="cyan">тексты</span>, автоматизация</h1><p class="lead" data-i18n="heroLead">Беру задачу под ключ: от идеи и выбора подходящей нейросети до готового результата. Без сложных подписок и настройки сервисов.</p><p class="price-hero" data-i18n-html="heroPrice">Небольшие задачи - <strong>от 300 ₽</strong></p><div class="actions"><a class="button primary" href="#contact" data-i18n="ctaMain">Обсудить задачу</a><a class="button secondary" href="#services" data-i18n="ctaServices">Посмотреть услуги</a></div><div class="badge"><span data-i18n="badgeOne">Ответ в диалоге</span><b>•</b><span data-i18n="badgeTwo">Работаем по задаче</span></div></div>
     </div>
   </header>
-  <main id="top">
-    <section class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow" data-i18n="eyebrow">● API-ДОСТУП ДЛЯ РАЗРАБОТКИ</div>
-        <h1 data-i18n-html="heroTitle">1 000 000 токенов<br><span>для ваших AI-проектов</span></h1>
-        <p data-i18n="heroText">Подключайте современные модели к Codex App, Cursor, VS Code, ботам и собственным приложениям через Custom Endpoint.</p>
-        <div class="hero-actions"><a class="btn primary purchase-link" href="https://t.me/Nadodelat2" target="_blank" rel="noopener" data-i18n="getApiAccess">Написать в Telegram ↗</a><a class="btn" href="#docs" data-i18n="howToConnect">Как подключить ↓</a></div>
-        <small class="hero-note" data-i18n="heroNote">✓ Выдача API-ключа • Без входа в аккаунт • Поддержка по настройке</small>
-      </div>
-      <div class="hero-visual"><div class="visual-top">tokenclub-edge-01 <b>● API online</b></div><div class="network"><div class="grid"></div><svg viewBox="0 0 600 420" preserveAspectRatio="none" aria-hidden="true"><path d="M80 330 L205 205 L316 280 L420 125 L530 220"/><path d="M205 205 L420 125"/><path d="M316 280 L530 220"/></svg><div class="node n1">GPT-5.6<small>99.9%</small></div><div class="node n2">Codex<small>98.7%</small></div><div class="node n3">GPT-5.5<small>99.4%</small></div><div class="node n4">API<small>LIVE</small></div><div class="token t1">+1,000</div><div class="token t2">+24,800</div><div class="token t3">+6,400</div></div><div class="terminal">request.log <span>POST /v1/chat/completions</span><pre>$ curl https://api.tokenclub.dev/v1
-  Authorization: Bearer tc_live_••••
-  model: gpt-5.6 / tokens: 1000000
-<span>✓ 200 OK   response_time: 184ms</span></pre></div></div>
-    </section>
-    <section class="stats"><div><b>01</b><span data-i18n="statTokens">Миллион токенов</span></div><div><b>05</b><span data-i18n="statModels">Моделей в доступе</span></div><div><b>24/7</b><span data-i18n="statSupport">Поддержка</span></div><div><b>∞</b><span data-i18n="statScenarios">Ваши сценарии</span></div></section>
-    <section class="section" id="features"><label data-i18n="featuresLabel">01 / ПРЕИМУЩЕСТВА</label><h2 data-i18n="featuresTitle">Всё для быстрого старта</h2><div class="features"><article>◈<h3 data-i18n="feature1Title">Стартовый баланс</h3><p data-i18n="feature1Text">Токены уже включены в выбранный тариф.</p></article><article>↗<h3 data-i18n="feature2Title">Быстрое подключение</h3><p data-i18n="feature2Text">Ключ, инструкция и запуск за несколько минут.</p></article><article>⌘<h3 data-i18n="feature3Title">Гибкая интеграция</h3><p data-i18n="feature3Text">Custom Endpoint для приложений и API.</p></article><article>◌<h3 data-i18n="feature4Title">Поддержка</h3><p data-i18n="feature4Text">Помощь по настройке после покупки.</p></article></div></section>
-    <section class="section models" id="models"><div><label data-i18n="modelsLabel">02 / МОДЕЛИ</label><h2 data-i18n-html="modelsTitle">Модели для задач,<br>которые нельзя откладывать</h2></div><div class="model-list"><div>01 <strong>GPT-5.6</strong><small data-i18n="model1">Сложные задачи и программирование</small>↗</div><div>02 <strong>GPT-5.5</strong><small data-i18n="model2">Универсальная работа</small>↗</div><div>03 <strong>Codex 5.3</strong><small data-i18n="model3">Разработка и рефакторинг</small>↗</div><div>04 <strong>GPT-5.2</strong><small data-i18n="model4">Документы и автоматизация</small>↗</div><div>05 <strong>GPT-5.4-mini</strong><small data-i18n="model5">Быстрые интеграции</small>↗</div></div></section>
-    <section class="compat"><div class="section"><label data-i18n="compatLabel">03 / СОВМЕСТИМОСТЬ</label><h2 data-i18n-html="compatTitle">Встраивается в привычный<br>рабочий процесс</h2><div class="compat-row"><span>Codex App</span><span>Cursor</span><span>VS Code</span><span>Extensions</span><span>Custom apps</span></div><p class="endpoint-note" data-i18n-html="endpointNote">Работает в решениях с поддержкой <strong>Custom Endpoint</strong></p></div></section>
-    <section class="section" id="setup"><label data-i18n="setupLabel">04 / ПОДКЛЮЧЕНИЕ</label><h2 data-i18n="setupTitle">Подключение за несколько минут</h2><div class="steps"><div><b>01</b><h3 data-i18n="step1Title">Откройте инструкцию</h3><p data-i18n="step1Text">Короткий гайд по настройке.</p></div><div><b>02</b><h3 data-i18n="step2Title">Добавьте API-ключ</h3><p data-i18n="step2Text">Вставьте выданный ключ в приложение.</p></div><div><b>03</b><h3 data-i18n="step3Title">Начинайте работу</h3><p data-i18n="step3Text">Выберите модель и запускайте проект.</p></div></div></section>
-    <section class="section" id="pricing"><label data-i18n="pricingLabel">05 / ТАРИФЫ</label><h2 data-i18n-html="pricingTitle">Выберите объём<br>под задачу</h2><aside class="youtube-gift" aria-label="Бесплатный аккаунт за подписку на YouTube"><div class="youtube-gift-icon" aria-hidden="true">▶</div><div class="youtube-gift-copy"><span data-i18n="youtubeGiftLabel">БЕСПЛАТНО ЗА ПОДПИСКУ НА YOUTUBE</span><strong data-i18n-html="youtubeGiftTitle">Аккаунт с балансом <em>1, 2, 4 или 6 млн токенов</em></strong><p data-i18n="youtubeGiftText">Подпишитесь на канал — получите аккаунт бесплатно.</p></div><a class="youtube-gift-cta" href="https://youtube.com/channel/UC8PJoADDYiaxqb0UiYBRF9w?si=MLlKE7kNi1kPEvmc" target="_blank" rel="noopener" data-i18n="youtubeLink">Подписаться на YouTube ↗</a></aside><div class="pricing"><a class="price-card" href="https://t.me/Nadodelat2" target="_blank" rel="noopener"><span>1 000 000</span><small>tokens</small><strong>1.25 ₽</strong><em data-i18n="goToPurchase">Написать в Telegram ↗</em></a><a class="price-card" href="https://t.me/Nadodelat2" target="_blank" rel="noopener"><span>2 000 000</span><small>tokens</small><strong>1.75 ₽</strong><em data-i18n="goToPurchase">Написать в Telegram ↗</em></a><a class="price-card featured" href="https://t.me/Nadodelat2" target="_blank" rel="noopener"><i data-i18n="popular">ПОПУЛЯРНЫЙ</i><span>4 000 000</span><small>tokens</small><strong>2.50 ₽</strong><em data-i18n="goToPurchase">Написать в Telegram ↗</em></a><a class="price-card" href="https://t.me/Nadodelat2" target="_blank" rel="noopener"><span>6 000 000</span><small>tokens</small><strong>3.50 ₽</strong><em data-i18n="goToPurchase">Написать в Telegram ↗</em></a></div><div class="terms"><span class="info-icon" aria-hidden="true">i</span><strong data-i18n="termsStrong">Напишите в Telegram, какой объём токенов вам нужен: 1, 2, 4 или 6 млн.</strong> <span data-i18n="termsText">После оплаты аккаунт с токенами будет выдан в Telegram. Бесплатный аккаунт можно получить после подписки на YouTube-канал.</span> <a href="https://youtube.com/channel/UC8PJoADDYiaxqb0UiYBRF9w?si=MLlKE7kNi1kPEvmc" target="_blank" rel="noopener" data-i18n="youtubeLink">Подписаться на YouTube ↗</a></div></section>
-    <section class="section docs" id="docs"><label data-i18n="docsLabel">06 / ДОКУМЕНТАЦИЯ</label><h2 data-i18n="docsTitle">Всё необходимое для работы</h2><div class="doc-grid"><a href="documentation.html"><article><h3 data-i18n="documentation">Документация</h3><p data-i18n="docText">Настройка endpoint, API-ключа и первый запрос — в понятном пошаговом руководстве.</p><span class="doc-link" data-i18n="readDocs">Открыть документацию →</span></article></a><a href="agreement.html"><article><h3 data-i18n="agreement">Пользовательское соглашение</h3><p data-i18n="agreementShort">Условия использования сервиса, правила доступа и ответственность сторон.</p><span class="doc-link" data-i18n="readAgreement">Прочитать соглашение →</span></article></a><a href="privacy.html"><article><h3 data-i18n="privacy">Политика конфиденциальности</h3><p data-i18n="privacyShort">Как мы обрабатываем данные заказа и обращения в поддержку.</p><span class="doc-link" data-i18n="readPrivacy">Открыть политику →</span></article></a></div></section>
-    <section class="final"><div><label>● READY WHEN YOU ARE</label><h2 data-i18n-html="finalTitle">Ваш следующий AI-проект<br><span>может начать работу сегодня</span></h2><a class="btn primary purchase-link" href="https://t.me/Nadodelat2" target="_blank" rel="noopener" data-i18n="getApiAccess">Написать в Telegram ↗</a><p data-i18n="finalNote">Напишите нужный объём токенов в Telegram</p></div></section>
+  <main>
+    <section class="services" id="services"><div class="wrap reveal"><p class="section-kicker" data-i18n="servicesKicker">Направления</p><h2 data-i18n="servicesTitle">Чем помогу</h2><p class="intro" data-i18n="servicesIntro">Конкретный результат под вашу цель, а не набор общих советов.</p><div class="service-grid">
+      <article class="service"><div class="icon"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></div><h3 data-i18n="service1Title">IT и разработка</h3><p data-i18n="service1Text">Python, JavaScript, HTML/CSS, скрипты, парсеры, алгоритмы и простые веб-страницы.</p></article>
+      <article class="service"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6 2h14v20H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/></svg></div><h3 data-i18n="service2Title">Тексты</h3><p data-i18n="service2Text">Статьи, посты, сценарии, переводы и редактура с учётом вашей аудитории.</p></article>
+      <article class="service"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 16l3-5 3 3 5-7"/></svg></div><h3 data-i18n="service3Title">Учёба и аналитика</h3><p data-i18n="service3Text">Разбор технических тем, расчёты, проекты, рефераты и анализ данных.</p></article>
+      <article class="service"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg></div><h3 data-i18n="service4Title">Бизнес-задачи</h3><p data-i18n="service4Text">Идеи, ТЗ, коммерческие предложения, презентации и подготовка материалов.</p></article>
+    </div></div></section>
+    <section class="process"><div class="wrap reveal"><p class="section-kicker" data-i18n="processKicker">Простой процесс</p><h2 data-i18n="processTitle">Как проходит работа</h2><div class="funnel"><article class="step"><b>01</b><h3 data-i18n="step1Title">Описываете задачу</h3><p data-i18n="step1Text">В сообщении или голосом, в удобной вам форме.</p></article><article class="step"><b>02</b><h3 data-i18n="step2Title">Выбираем подход</h3><p data-i18n="step2Text">Подбираем AI-инструмент и способ решения.</p></article><article class="step"><b>03</b><h3 data-i18n="step3Title">Согласовываем условия</h3><p data-i18n="step3Text">Объём, сроки и точную стоимость до старта.</p></article><article class="step"><b>04</b><h3 data-i18n="step4Title">Получаете результат</h3><p data-i18n="step4Text">Готовый и проверенный материал для вашей задачи.</p></article></div><a class="button secondary" href="#contact" data-i18n="processCta">Написать в Telegram</a></div></section>
+    <section class="pricing"><div class="wrap reveal"><p class="section-kicker" data-i18n="priceKicker">Без сюрпризов</p><div class="price-box"><div><h2 data-i18n="priceTitle">Понятная стоимость до старта работы</h2><p class="price-main" data-i18n="priceMain">От 300-500 ₽ за небольшие тексты и скрипты</p></div><p class="price-note" data-i18n="priceNote">Итоговая цена зависит от сложности и объёма. Перед началом согласуем все условия.</p></div></div></section>
+    <section class="trust"><div class="wrap reveal"><p class="section-kicker" data-i18n="trustKicker">Принцип работы</p><h2 data-i18n="trustTitle">Фокус на вашем результате</h2><div class="trust-list"><div class="trust-item"><span>01</span><span data-i18n="trust1">Работа под вашу задачу, а не шаблонное решение</span></div><div class="trust-item"><span>02</span><span data-i18n="trust2">Помогаю выбрать оптимальный подход</span></div><div class="trust-item"><span>03</span><span data-i18n="trust3">Понятное общение и согласование результата</span></div><div class="trust-item"><span>04</span><span data-i18n="trust4">Проверка результата перед передачей</span></div></div></div></section>
   </main>
-  <footer><a class="brand" href="#top"><b>TC</b><span>TokenClub API</span></a><a href="documentation.html" data-i18n="documentation">Документация</a><a href="agreement.html" data-i18n="agreementFooter">Соглашение</a><a href="privacy.html" data-i18n="privacyFooter">Политика</a><a class="purchase-link" href="https://t.me/Nadodelat2" target="_blank" rel="noopener" data-i18n="buyOnTelegram">Написать в Telegram ↗</a><small data-i18n="footerNote">Для покупки напишите в Telegram нужный объём токенов.</small></footer>
-  <script src="script.js"></script>
+  <section class="final" id="contact"><div class="wrap reveal"><p class="section-kicker" data-i18n="finalKicker">Начнём с диалога</p><h2 data-i18n="finalTitle">Есть задача? Разберём её в Telegram</h2><p data-i18n="finalText">Опишите, что нужно сделать, и я предложу подходящий вариант решения и стоимость.</p><a class="button primary" href="https://t.me/Nadodelat2" data-i18n="finalCta">Перейти в Telegram</a></div></section>
+  <footer><div class="wrap"><span>AI.ПРАКТИКА</span><span data-i18n="footer">Код · Тексты · Автоматизация</span></div></footer>
+  <a class="fixed-tg" href="https://t.me/Nadodelat2" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="M21.7 3.2 18.5 19c-.2 1.1-.8 1.4-1.7.9l-5.1-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.2 9.5-8.6c.4-.4-.1-.6-.6-.3L5.8 12.3.8 10.7c-1.1-.4-1.1-1.1.2-1.6L20.4 1.6c.9-.3 1.7.2 1.3 1.6Z"/></svg></a>
+  <script>
+    const translations = {
+      ru: { brand:'ПРАКТИКА',navNote:'AI-решения под вашу задачу',eyebrow:'Частный AI-исполнитель',heroTitle:'Решаю задачи с помощью AI: <span class="lime">код</span>, <span class="cyan">тексты</span>, автоматизация',heroLead:'Беру задачу под ключ: от идеи и выбора подходящей нейросети до готового результата. Без сложных подписок и настройки сервисов.',heroPrice:'Небольшие задачи - <strong>от 300 ₽</strong>',ctaMain:'Обсудить задачу',ctaServices:'Посмотреть услуги',badgeOne:'Ответ в диалоге',badgeTwo:'Работаем по задаче',servicesKicker:'Направления',servicesTitle:'Чем помогу',servicesIntro:'Конкретный результат под вашу цель, а не набор общих советов.',service1Title:'IT и разработка',service1Text:'Python, JavaScript, HTML/CSS, скрипты, парсеры, алгоритмы и простые веб-страницы.',service2Title:'Тексты',service2Text:'Статьи, посты, сценарии, переводы и редактура с учётом вашей аудитории.',service3Title:'Учёба и аналитика',service3Text:'Разбор технических тем, расчёты, проекты, рефераты и анализ данных.',service4Title:'Бизнес-задачи',service4Text:'Идеи, ТЗ, коммерческие предложения, презентации и подготовка материалов.',processKicker:'Простой процесс',processTitle:'Как проходит работа',step1Title:'Описываете задачу',step1Text:'В сообщении или голосом, в удобной вам форме.',step2Title:'Выбираем подход',step2Text:'Подбираем AI-инструмент и способ решения.',step3Title:'Согласовываем условия',step3Text:'Объём, сроки и точную стоимость до старта.',step4Title:'Получаете результат',step4Text:'Готовый и проверенный материал для вашей задачи.',processCta:'Написать в Telegram',priceKicker:'Без сюрпризов',priceTitle:'Понятная стоимость до старта работы',priceMain:'От 300-500 ₽ за небольшие тексты и скрипты',priceNote:'Итоговая цена зависит от сложности и объёма. Перед началом согласуем все условия.',trustKicker:'Принцип работы',trustTitle:'Фокус на вашем результате',trust1:'Работа под вашу задачу, а не шаблонное решение',trust2:'Помогаю выбрать оптимальный подход',trust3:'Понятное общение и согласование результата',trust4:'Проверка результата перед передачей',finalKicker:'Начнём с диалога',finalTitle:'Есть задача? Разберём её в Telegram',finalText:'Опишите, что нужно сделать, и я предложу подходящий вариант решения и стоимость.',finalCta:'Перейти в Telegram',footer:'Код · Тексты · Автоматизация'},
+      en: { brand:'PRACTICE',navNote:'AI solutions for your task',eyebrow:'Independent AI specialist',heroTitle:'I solve tasks with AI: <span class="lime">code</span>, <span class="cyan">content</span>, automation',heroLead:'I take a task from idea and choosing the right AI model to a finished result. No complex subscriptions or service setup.',heroPrice:'Small tasks - <strong>from 300 RUB</strong>',ctaMain:'Discuss a task',ctaServices:'View services',badgeOne:'Reply in chat',badgeTwo:'Task-focused work',servicesKicker:'Services',servicesTitle:'How I can help',servicesIntro:'A concrete result for your goal, not a set of generic recommendations.',service1Title:'IT & development',service1Text:'Python, JavaScript, HTML/CSS, scripts, parsers, algorithms and simple web pages.',service2Title:'Content',service2Text:'Articles, posts, scripts, translations and editing tailored to your audience.',service3Title:'Study & analytics',service3Text:'Technical topics, calculations, projects, papers and data analysis.',service4Title:'Business tasks',service4Text:'Ideas, briefs, commercial proposals, presentations and supporting materials.',processKicker:'A clear process',processTitle:'How the work goes',step1Title:'Describe your task',step1Text:'In a message or voice note, in the format that suits you.',step2Title:'Choose an approach',step2Text:'We select the right AI tool and solution path.',step3Title:'Agree on details',step3Text:'Scope, timeline and exact cost before the start.',step4Title:'Receive the result',step4Text:'Finished and checked material for your task.',processCta:'Message on Telegram',priceKicker:'No surprises',priceTitle:'A clear price before work begins',priceMain:'From 300-500 RUB for small texts and scripts',priceNote:'The final price depends on complexity and scope. We agree on all details before starting.',trustKicker:'Work principle',trustTitle:'Focused on your result',trust1:'Work tailored to your task, not a template solution',trust2:'Help choosing the most effective approach',trust3:'Clear communication and result alignment',trust4:'Result review before delivery',finalKicker:'Start with a conversation',finalTitle:'Have a task? Let us discuss it on Telegram',finalText:'Describe what you need, and I will suggest a suitable solution and estimate.',finalCta:'Open Telegram',footer:'Code · Content · Automation'}
+    };
+    const root=document.documentElement, langButton=document.getElementById('langToggle'), themeButton=document.getElementById('themeToggle');
+    function setLanguage(lang) { const dict=translations[lang]; document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=dict[el.dataset.i18n]); document.querySelectorAll('[data-i18n-html]').forEach(el=>el.innerHTML=dict[el.dataset.i18nHtml]); root.lang=lang; langButton.textContent=lang==='ru'?'EN':'RU'; langButton.setAttribute('aria-label',lang==='ru'?'Switch to English':'Переключить на русский'); localStorage.setItem('site-lang',lang); }
+    function setTheme(theme) { root.dataset.theme=theme; themeButton.setAttribute('aria-pressed',String(theme==='light')); themeButton.setAttribute('aria-label',theme==='light'?'Switch to dark theme':'Switch to light theme'); localStorage.setItem('site-theme',theme); }
+    const savedLang=localStorage.getItem('site-lang') || 'ru', savedTheme=localStorage.getItem('site-theme') || 'dark'; setLanguage(savedLang); setTheme(savedTheme);
+    langButton.addEventListener('click',()=>setLanguage(root.lang==='ru'?'en':'ru')); themeButton.addEventListener('click',()=>setTheme(root.dataset.theme==='light'?'dark':'light'));
+    const motion=!matchMedia('(prefers-reduced-motion: reduce)').matches; const reveal=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');reveal.unobserve(e.target)}}),{threshold:.12}); document.querySelectorAll('.reveal').forEach(el=>reveal.observe(el));
+    const canvas=document.getElementById('field'); if(motion && canvas){const ctx=canvas.getContext('2d');let dots=[];function resize(){const rect=canvas.getBoundingClientRect(),d=devicePixelRatio;canvas.width=rect.width*d;canvas.height=rect.height*d;ctx.setTransform(d,0,0,d,0,0);dots=Array.from({length:Math.min(48,Math.round(rect.width/28))},()=>({x:Math.random()*rect.width,y:Math.random()*rect.height,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*1.4+.4}));}function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);ctx.strokeStyle='rgba(130,220,255,.08)';for(let x=0;x<w;x+=65){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}dots.forEach((p,i)=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;ctx.fillStyle=i%3?'rgba(130,220,255,.72)':'rgba(200,255,61,.86)';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();dots.slice(i+1).forEach(q=>{const dx=p.x-q.x,dy=p.y-q.y;if(dx*dx+dy*dy<11000){ctx.strokeStyle='rgba(130,220,255,.08)';ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke()}})});requestAnimationFrame(draw);}resize();addEventListener('resize',resize);draw();}
+    addEventListener('load',()=>setTimeout(()=>{document.querySelector('.loader').classList.add('done');document.body.classList.remove('loading')},450));
+  </script>
 </body>
 </html>
