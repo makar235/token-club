@@ -7,6 +7,16 @@
   <title>TokenClub API — доступ к AI-моделям</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="enhancements.css">
+  <style>
+    .pricing .price-card:nth-child(1) > strong { font-size: 0; }
+    .pricing .price-card:nth-child(1) > strong::after { content: "5 ₽"; font-size: 25px; }
+    .pricing .price-card:nth-child(2) > strong { font-size: 0; }
+    .pricing .price-card:nth-child(2) > strong::after { content: "8 ₽"; font-size: 25px; }
+    .pricing .price-card:nth-child(3) > strong { font-size: 0; }
+    .pricing .price-card:nth-child(3) > strong::after { content: "17 ₽"; font-size: 25px; }
+    .pricing .price-card:nth-child(4) > strong { font-size: 0; }
+    .pricing .price-card:nth-child(4) > strong::after { content: "25 ₽"; font-size: 25px; }
+  </style>
 </head>
 <body>
   <div class="loader" id="loader" data-i18n="loader">Подключаем TokenClub API…</div>
